@@ -13,7 +13,7 @@ Este projeto contém exemplos de automação de testes end-to-end utilizando [Cy
 Clone o repositório e instale as dependências:
 
 ```bash
-git clone https://github.com/seu-usuario/testes-cypress-uds-estudos.git
+git clone https://github.com/jonathanatss/cypress-uds-teste-pratico.git
 cd testes-cypress-uds-estudos
 npm install
 ```
