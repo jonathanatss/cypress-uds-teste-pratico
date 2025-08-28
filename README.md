@@ -14,7 +14,7 @@ Clone o repositório e instale as dependências:
 
 ```bash
 git clone https://github.com/jonathanatss/cypress-uds-teste-pratico.git
-cd testes-cypress-uds-estudos
+cd cypress-uds-teste-pratico-main
 npm install
 ```
 
