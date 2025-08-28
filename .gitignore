@@ -1,0 +1,21 @@
+# node_modules: dependências do projeto
+node_modules/
+
+# Relatórios de testes (mochawesome)
+cypress/reports/
+
+# Arquivo de ambiente com dados sensíveis
+cypress.env.json
+
+# Arquivos de cache do Cypress
+cypress/screenshots/
+cypress/videos/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs e arquivos temporários
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

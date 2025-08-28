@@ -1,0 +1,124 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 2,
+    "passes": 2,
+    "pending": 0,
+    "failures": 0,
+    "start": "2025-08-28T19:18:33.696Z",
+    "end": "2025-08-28T19:18:36.243Z",
+    "duration": 2547,
+    "testsRegistered": 2,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "f77198ae-58f2-47ae-b471-3c79b55a4143",
+      "title": "",
+      "fullFile": "cypress\\e2e\\login.cy.js",
+      "file": "cypress\\e2e\\login.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "0dc6d757-a150-4cac-b82d-d17dfd832887",
+          "title": "Login Test",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should log in with valid credentials",
+              "fullTitle": "Login Test should log in with valid credentials",
+              "timedOut": null,
+              "duration": 1482,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.login();\n// Verifica se o título da página está correto\ncy.get('.title').should('have.text', 'Products', 'O título da página deve ser \"Products\" após login');\n// Verifica se há produtos listados\ncy.get('.inventory_item').should('have.length.greaterThan', 0, 'Deve haver pelo menos um produto listado');\n// Verifica se o botão de logout está visível\ncy.get('#react-burger-menu-btn').click();\ncy.get('#logout_sidebar_link').should('be.visible', 'O botão de logout deve estar visível');\n// Verifica se um produto específico está listado\ncy.contains('.inventory_item_name', 'Sauce Labs Backpack').should('be.visible', 'O produto \"Sauce Labs Backpack\" deve estar visível na lista');",
+              "err": {},
+              "uuid": "2ed104ac-b888-4eae-a41d-853301a9ef43",
+              "parentUUID": "0dc6d757-a150-4cac-b82d-d17dfd832887",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "should not log in with invalid credentials",
+              "fullTitle": "Login Test should not log in with invalid credentials",
+              "timedOut": null,
+              "duration": 1015,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.get('#user-name').type('usuario_incorreto');\ncy.get('#password').type('senha_errada');\ncy.get('[data-test=\"login-button\"]').click();\n// Valida mensagem de erro de login\ncy.get('[data-test=\"error\"]').should('be.visible', 'A mensagem de erro deve ser exibida para login inválido').and('contain', 'Username and password do not match any user in this service');",
+              "err": {},
+              "uuid": "fe36910a-d93f-415d-9fc6-e0e7a913e94d",
+              "parentUUID": "0dc6d757-a150-4cac-b82d-d17dfd832887",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "2ed104ac-b888-4eae-a41d-853301a9ef43",
+            "fe36910a-d93f-415d-9fc6-e0e7a913e94d"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 2497,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": true,
+        "json": true
+      },
+      "version": "6.2.0"
+    }
+  }
+}
