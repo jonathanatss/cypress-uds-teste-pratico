@@ -14,10 +14,10 @@ O objetivo é fornecer uma base sólida e padronizada para que novos projetos po
 - [6. Arquitetura e Padrões](#6-arquitetura-e-padrões)
   - [Page Object Model (POM)](#page-object-model-pom)
   - [Comandos Customizados](#comandos-customizados)
-  - [Fixtures para Dados de Teste](#fixtures-para-dados-de-teste)
-- [7. Como Adicionar Novos Testes (Passo a Passo)](#7-como-adicionar-novos-testes-passo-a-passo)
-- [8. Qualidade e Padronização de Código](#8-qualidade-e-padronização-de-código)
-- [9. Configuração do Cypress](#9-configuração-do-cypress)
+- [7. Gerenciando Dados: Fixtures vs. Variáveis de Ambiente](#7-gerenciando-dados-fixtures-vs-variáveis-de-ambiente)
+- [8. Como Adicionar Novos Testes (Passo a Passo)](#8-como-adicionar-novos-testes-passo-a-passo)
+- [9. Qualidade e Padronização de Código](#9-qualidade-e-padronização-de-código)
+- [10. Configuração do Cypress](#10-configuração-do-cypress)
 
 ## 1. Propósito
 
@@ -66,11 +66,13 @@ A arquitetura foi organizada para separar as responsabilidades, facilitando a ma
 │       ├── commands.js                <-- COMANDOS CUSTOMIZADOS
 │       └── e2e.js                     <-- Arquivo de setup do Cypress
 │
-├── .eslintrc.json                     <-- Configuração do ESLint (Qualidade de Código)
-├── .prettierrc                        <-- Configuração do Prettier (Formatação)
+├── .eslintignore
+├── .gitignore
+├── .prettierrc
 ├── cypress.config.js                  <-- Configuração principal do Cypress
-├── package.json                       <-- Dependências e scripts do projeto
-└── README.md                          <-- Esta documentação
+├── cypress.env.json                   <-- ARQUIVO PARA VARIÁVEIS LOCAIS (NÃO ENVIAR PARA O GIT)
+├── package.json
+└── README.md
 ```
 
 - **`cypress/e2e`**: O coração do projeto, onde ficam os arquivos de teste (specs).
@@ -100,19 +102,7 @@ Este template utiliza o padrão **Page Object Model**. A ideia é simples:
 
 **Vantagens:**
 - **Manutenção Simplificada:** Se um seletor mudar na aplicação, você só precisa atualizá-lo em **um único lugar**.
-- **Testes Mais Legíveis:** Seus testes se tornam mais declarativos, focando em "o quê" fazer, e não em "como" fazer. Veja a diferença:
-
-  ```javascript
-  // SEM Page Object (ruim)
-  cy.get('[data-test="username"]').type('user');
-  cy.get('[data-test="password"]').type('pass');
-  cy.get('[data-test="login-button"]').click();
-
-  // COM Page Object (bom)
-  LoginPage.fillUsername('user');
-  LoginPage.fillPassword('pass');
-  LoginPage.submit();
-  ```
+- **Testes Mais Legíveis:** Seus testes se tornam mais declarativos, focando em "o quê" fazer, e não em "como" fazer.
 
 ### Comandos Customizados
 
@@ -122,23 +112,98 @@ Comandos customizados (`cypress/support/commands.js`) são perfeitos para agrupa
 - **Método de Page Object:** Ações que pertencem a **uma única página**. Ex: `LoginPage.fillUsername()`.
 - **Comando Customizado:** Ações que envolvem **múltiplas páginas** ou representam uma jornada completa do usuário. Ex: `cy.login()`, que visita a página de login, preenche os campos e submete, resultando em uma navegação para a página de inventário.
 
-### Fixtures para Dados de Teste
+## 7. Gerenciando Dados: Fixtures vs. Variáveis de Ambiente
 
-A pasta `cypress/fixtures` permite separar os dados de teste da lógica. Isso torna os testes mais flexíveis e fáceis de adaptar.
+Uma dúvida comum é: "Onde devo guardar meus dados de teste, como usuários e senhas?". Existem abordagens diferentes, cada uma com um propósito.
 
-Para carregar uma fixture em um teste, use `cy.fixture()`:
-```javascript
-// Dentro de um bloco `beforeEach` ou `it`
-cy.fixture('user-data.json').as('userData');
+### Método 1: `cypress/fixtures` (Para Massa de Dados)
 
-// Para usar os dados no teste (usando `function() {}` no `it`)
-it('deve preencher o checkout', function() {
-  const { firstName, lastName } = this.userData.checkout;
-  CheckoutPage.fillCheckoutInformation(firstName, lastName, '12345');
-});
-```
+A pasta `fixtures` é ideal para armazenar **massa de dados não sensíveis** que simulam o estado da sua aplicação.
 
-## 7. Como Adicionar Novos Testes (Passo a Passo)
+- **Use para**: Dados de formulários, listas de produtos, respostas de API mocadas.
+- **Exemplo (`cypress/fixtures/user-data.json`):**
+  ```json
+  {
+    "checkout": {
+      "firstName": "João",
+      "lastName": "Silva",
+      "postalCode": "12345-678"
+    }
+  }
+  ```
+- **Como usar no teste:**
+  ```javascript
+  cy.fixture('user-data.json').then((userData) => {
+    CheckoutPage.fillCheckoutInformation(
+      userData.checkout.firstName,
+      // ...
+    );
+  });
+  ```
+
+> ⚠️ **Importante:** **NUNCA** armazene senhas, tokens ou chaves de API em arquivos de fixture. Estes arquivos são versionados no Git e ficam expostos no repositório, o que é uma falha grave de segurança.
+
+### Método 2: `cypress.env.json` (Para Desenvolvimento Local)
+
+Este arquivo é perfeito para armazenar variáveis que mudam de acordo com o ambiente, especialmente durante o **desenvolvimento local**.
+
+- **Use para**: Credenciais de login do ambiente de dev, URLs de API locais.
+- **Exemplo (`cypress.env.json`):**
+  ```json
+  {
+    "username": "standard_user",
+    "password": "secret_sauce"
+  }
+  ```
+- **Como usar no teste:**
+  ```javascript
+  const username = Cypress.env('username');
+  const password = Cypress.env('password');
+  cy.login(username, password);
+  ```
+
+> 🔒 **ESSENCIAL:** Para garantir a segurança, o arquivo `cypress.env.json` **NUNCA** deve ser enviado para o repositório. Adicione-o ao seu arquivo `.gitignore`:
+> ```gitignore
+> # Cypress environment variables
+> cypress.env.json
+> ```
+
+### Método 3: Variáveis de Ambiente do Sistema (A Melhor Prática para Dados Sensíveis)
+
+Esta é a abordagem **mais segura e profissional**, especialmente para ambientes de CI/CD (Integração Contínua).
+
+- **Use para**: Todas as informações sensíveis (usuários, senhas, tokens) em ambientes compartilhados e de produção.
+- **Como funciona**: O Cypress lê automaticamente variáveis de ambiente do seu sistema operacional que começam com o prefixo `CYPRESS_`.
+
+- **Como definir (no seu terminal):**
+  - No Linux/macOS:
+    ```bash
+    export CYPRESS_username=standard_user
+    export CYPRESS_password=secret_sauce
+    ```
+  - No Windows (CMD):
+    ```bash
+    set CYPRESS_username=standard_user
+    set CYPRESS_password=secret_sauce
+    ```
+- **Como usar no teste:**
+  O código é **exatamente o mesmo** do método anterior. O Cypress é inteligente e prioriza as variáveis do sistema sobre as do `cypress.env.json`.
+  ```javascript
+  const username = Cypress.env('username'); // Pega o valor de CYPRESS_username
+  const password = Cypress.env('password'); // Pega o valor de CYPRESS_password
+  ```
+**Vantagem principal:** Em seu sistema de CI/CD (GitHub Actions, Jenkins, etc.), você pode configurar essas variáveis como "Secrets", e seu teste funcionará sem que a senha esteja escrita em qualquer lugar do código.
+
+### Tabela Resumo
+
+| Método | Ideal para | Vantagens |
+| :--- | :--- | :--- |
+| **Fixtures** | **Massa de dados** não sensíveis (nomes, produtos). | Versionado com o código, ótimo para mocks. |
+| **`cypress.env.json`** | **Desenvolvimento local** (credenciais locais). | Fácil de configurar localmente. **Deve estar no `.gitignore`!** |
+| **Variáveis de Ambiente** | **Dados Sensíveis** (senhas, tokens) em **CI/CD**. | **A forma mais segura e profissional.** Flexível entre ambientes. |
+
+
+## 8. Como Adicionar Novos Testes (Passo a Passo)
 
 Vamos simular a criação de um novo teste para a funcionalidade de "Logout".
 
@@ -205,7 +270,7 @@ describe('Funcionalidade de Logout', () => {
 
 Pronto! Você criou um novo teste de forma organizada e reutilizável.
 
-## 8. Qualidade e Padronização de Código
+## 9. Qualidade e Padronização de Código
 
 Este template vem com **ESLint** e **Prettier** configurados para garantir a consistência e a qualidade do código.
 
@@ -214,12 +279,12 @@ Este template vem com **ESLint** e **Prettier** configurados para garantir a con
 
 **Recomendação:** Configure seu editor de código (como o VS Code) para formatar e corrigir o código automaticamente ao salvar, usando as extensões do ESLint e Prettier.
 
-## 9. Configuração do Cypress
+## 10. Configuração do Cypress
 
 O arquivo `cypress.config.js` é o ponto central de configuração do Cypress. Nele, você pode ajustar:
 
 - `baseUrl`: A URL principal da sua aplicação. Usar isso evita repeti-la em cada `cy.visit()`.
-- `env`: Objeto para armazenar variáveis de ambiente, como credenciais de login. **NUNCA** salve senhas ou chaves de API diretamente neste arquivo. Use variáveis de ambiente do sistema para injetar esses valores em seu ambiente de CI/CD.
+- `env`: Objeto para armazenar variáveis de ambiente, como credenciais de login.
 - `viewportWidth` e `viewportHeight`: Para definir a resolução da tela durante os testes.
 
 Consulte a [documentação oficial do Cypress](https://docs.cypress.io/guides/references/configuration) para ver todas as opções disponíveis.
