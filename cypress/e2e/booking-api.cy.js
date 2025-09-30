@@ -1,27 +1,27 @@
 /**
- * Arquivo de teste para a API Restful Booker
- * URL Base: https://restful-booker.herokuapp.com
- * Documentação: https://restful-booker.herokuapp.com/apidoc/index.html
+ * Test file for the Restful Booker API
+ * Base URL: https://restful-booker.herokuapp.com
+ * Documentation: https://restful-booker.herokuapp.com/apidoc/index.html
  *
- * 1. Criar uma reserva com sucesso.
- * 2. Buscar a reserva criada pelo firstname.
- * 3. Tentar criar uma reserva com payload inválido.
- * 4. Buscar por um firstname que não existe.
+ * 1. Create a booking successfully.
+ * 2. Get the created booking by firstname.
+ * 3. Attempt to create a booking with an invalid payload.
+ * 4. Search for a firstname that does not exist.
  */
 
-describe('Cenários de teste de API para Restful Booker', () => {
-  // Variáveis para compartilhar o estado entre os testes
-  let bookingId
-  let bookingFirstname
+describe('API Test Scenarios for Restful Booker', () => {
+  // Variables to share state between tests
+  let bookingId;
+  let bookingFirstname;
 
-  // Garante que cada teste começa sem dados residuais
+  // Ensures each test starts without residual data
   beforeEach(() => {
-    bookingId = undefined
-    bookingFirstname = undefined
-  })
+    bookingId = undefined;
+    bookingFirstname = undefined;
+  });
 
-  // Cenário 1: Criar uma reserva com sucesso
-  it('Cenário 1: Deve criar uma nova reserva (booking) com sucesso', () => {
+  // Scenario 1: Create a new booking successfully
+  it('Scenario 1: Should create a new booking successfully', () => {
     const payload = {
       firstname: 'Jonathan',
       lastname: 'Silva',
@@ -29,27 +29,27 @@ describe('Cenários de teste de API para Restful Booker', () => {
       depositpaid: true,
       bookingdates: {
         checkin: '2025-09-01',
-        checkout: '2025-09-05'
+        checkout: '2025-09-05',
       },
-      additionalneeds: 'Café da manhã'
-    }
+      additionalneeds: 'Breakfast',
+    };
 
     cy.createBooking(payload).then((response) => {
-      expect(response.status, 'Status deve ser 200 ao criar booking').to.eq(200)
-      expect(response.body, 'Response deve conter bookingid').to.have.property('bookingid')
-      expect(response.body.booking.firstname, 'Firstname deve ser igual ao enviado').to.eq(payload.firstname)
-      expect(response.body.booking.totalprice, 'Totalprice deve ser igual ao enviado').to.eq(payload.totalprice)
+      expect(response.status, 'Status should be 200 when creating a booking').to.eq(200);
+      expect(response.body, 'Response should contain a bookingid').to.have.property('bookingid');
+      expect(response.body.booking.firstname, 'Firstname should match the payload').to.eq(payload.firstname);
+      expect(response.body.booking.totalprice, 'Totalprice should match the payload').to.eq(payload.totalprice);
 
-      bookingId = response.body.bookingid
-      bookingFirstname = response.body.booking.firstname
+      bookingId = response.body.bookingid;
+      bookingFirstname = response.body.booking.firstname;
 
-      cy.log(`Booking ID criado: ${bookingId}`)
-      cy.log(`Firstname para busca: ${bookingFirstname}`)
-    })
-  })
+      cy.log(`Booking ID created: ${bookingId}`);
+      cy.log(`Firstname for search: ${bookingFirstname}`);
+    });
+  });
 
-  // Cenário 2: Buscar a reserva criada pelo firstname
-  it('Cenário 2: Deve criar e buscar a reserva pelo firstname', () => {
+  // Scenario 2: Create and then get the booking by firstname
+  it('Scenario 2: Should create and then retrieve the booking by firstname', () => {
     const payload = {
       firstname: 'Jonathan',
       lastname: 'Tester',
@@ -57,45 +57,45 @@ describe('Cenários de teste de API para Restful Booker', () => {
       depositpaid: true,
       bookingdates: {
         checkin: '2025-09-01',
-        checkout: '2025-09-05'
+        checkout: '2025-09-05',
       },
-      additionalneeds: 'Café da manhã'
-    }
+      additionalneeds: 'Breakfast',
+    };
 
-    // Cria o booking antes de buscar
+    // Create the booking before searching
     cy.createBooking(payload).then((response) => {
-      expect(response.status, 'Status deve ser 200 ao criar booking').to.eq(200)
-      const bookingId = response.body.bookingid
-      const bookingFirstname = response.body.booking.firstname
+      expect(response.status, 'Status should be 200 when creating a booking').to.eq(200);
+      const createdBookingId = response.body.bookingid;
+      const createdFirstname = response.body.booking.firstname;
 
-      cy.getBookingByFirstname(bookingFirstname).then((response) => {
-        expect(response.status, 'Status deve ser 200 ao buscar booking').to.eq(200)
-        expect(response.body, 'Body deve ser um array não vazio').to.be.an('array').and.not.be.empty
+      cy.getBookingByFirstname(createdFirstname).then((searchResponse) => {
+        expect(searchResponse.status, 'Status should be 200 when searching for the booking').to.eq(200);
+        expect(searchResponse.body, 'Body should be a non-empty array').to.be.an('array').and.not.be.empty;
 
-        const ids = response.body.map(booking => booking.bookingid)
-        expect(ids, 'Booking ID deve estar na lista de resultados').to.include(bookingId)
-      })
-    })
-  })
+        const ids = searchResponse.body.map((booking) => booking.bookingid);
+        expect(ids, 'The created booking ID should be in the search results').to.include(createdBookingId);
+      });
+    });
+  });
 
-  // Cenário 3: Erro ao criar booking com payload inválido
-  it('Cenário 3: Deve retornar erro ao tentar criar reserva com payload inválido', () => {
+  // Scenario 3: Error when creating a booking with an invalid payload
+  it('Scenario 3: Should return an error when trying to create a booking with an invalid payload', () => {
     const invalidPayload = {
-      totalprice: 150
-    }
+      totalprice: 150,
+    };
 
     cy.createInvalidBooking(invalidPayload).then((response) => {
-      expect(response.status, 'Status deve ser 500 para payload inválido').to.eq(500)
-    })
-  })
+      expect(response.status, 'Status should be 500 for an invalid payload').to.eq(500);
+    });
+  });
 
-  // Cenário 4: Buscar por um firstname inexistente
-  it('Cenário 4: Deve retornar uma lista vazia ao buscar por um firstname inexistente', () => {
-    const nonExistentName = `Inexistente${Date.now()}`
+  // Scenario 4: Search for a non-existent firstname
+  it('Scenario 4: Should return an empty list when searching for a non-existent firstname', () => {
+    const nonExistentName = `NonExistent${Date.now()}`;
 
     cy.getBookingByFirstname(nonExistentName).then((response) => {
-      expect(response.status, 'Status deve ser 200 ao buscar por nome inexistente').to.eq(200)
-      expect(response.body, 'Body deve ser um array vazio').to.be.an('array').and.to.be.empty
-    })
-  })
-})
+      expect(response.status, 'Status should be 200 when searching for a non-existent name').to.eq(200);
+      expect(response.body, 'Body should be an empty array').to.be.an('array').and.to.be.empty;
+    });
+  });
+});

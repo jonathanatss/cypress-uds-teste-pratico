@@ -1,29 +1,47 @@
-describe('Fluxo completo de compra', () => {
+// cypress/e2e/purchase-flow.cy.js
+
+import InventoryPage from '../pages/InventoryPage';
+import CartPage from '../pages/CartPage';
+import CheckoutPage from '../pages/CheckoutPage';
+
+describe('Complete Purchase Flow', () => {
   beforeEach(() => {
-    // Garante que cada teste começa na tela de login
-    cy.visit('https://www.saucedemo.com/')
-  })
+    // Loads data from the fixture before each test
+    cy.fixture('example.json').as('userData');
+    // Ensures each test starts by logging in
+    cy.login();
+  });
 
-  it('deve realizar uma compra com sucesso', () => {
-    // Realiza login utilizando dados do cypress.env.json
-    cy.login()
+  it('should complete a purchase successfully', function () {
+    const productName = 'Sauce Labs Backpack';
+    const { firstName, lastName, postalCode } = this.userData.checkout;
 
-    // Adiciona o produto "Sauce Labs Backpack" ao carrinho e valida o badge
-    cy.addProductToCart()
+    // Add "Sauce Labs Backpack" to the cart and validate the badge
+    InventoryPage.addProductToCart(productName);
+    InventoryPage.getCartBadge().should('have.text', '1');
 
-    // Acessa o carrinho e valida se o produto está presente
-    cy.goToCartAndValidateProduct()
+    // Go to the cart and validate that the product is present
+    InventoryPage.goToCart();
+    cy.url().should('include', '/cart.html');
+    CartPage.validateProductInCart(productName);
 
-    // Inicia o processo de checkout e preenche os dados obrigatórios
-    cy.checkout()
+    // Start the checkout process and fill in the required fields
+    CartPage.goToCheckout();
+    cy.url().should('include', '/checkout-step-one.html');
+    CheckoutPage.fillCheckoutInformation(firstName, lastName, postalCode);
 
-    // Valida o resumo do checkout: produto, preço, subtotal, imposto e total
-    cy.validateCheckoutSummary()
+    // Validate the checkout summary: product, price, subtotal, tax, and total
+    cy.url().should('include', '/checkout-step-two.html');
+    CheckoutPage.validateCheckoutSummary(productName);
 
-    // Finaliza a compra e valida a mensagem de sucesso
-    cy.finishPurchaseAndValidate()
+    // Finish the purchase and validate the success message
+    CheckoutPage.finishPurchase();
+    cy.url().should('include', '/checkout-complete.html');
+    CheckoutPage.validateOrderConfirmation();
 
-    // Retorna para a tela de produtos, acessa o carrinho e valida que está vazio
-    cy.validateCartIsEmpty()
-  })
-})
+    // Return to the products page, go to the cart, and validate that it is empty
+    CheckoutPage.backToProducts();
+    InventoryPage.goToCart();
+    CartPage.validateCartIsEmpty();
+  });
+});

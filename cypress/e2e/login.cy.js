@@ -1,52 +1,59 @@
+// cypress/e2e/login.cy.js
+
+import LoginPage from '../pages/LoginPage';
+import InventoryPage from '../pages/InventoryPage';
+
 describe('Login Test', () => {
   beforeEach(() => {
-    // Garante que cada teste começa na tela de loginn
-    cy.visit('https://www.saucedemo.com/')
-  })
+    // Ensures that each test starts on the login screen
+    LoginPage.visit();
+  });
 
   it('should log in with valid credentials', () => {
-    cy.login()
+    cy.login();
 
-    // Verifica se o título da página está correto
-    cy.get('.title').should(
+    // Verify that the page title is correct
+    InventoryPage.getPageTitle().should(
       'have.text',
       'Products',
-      'O título da página deve ser "Products" após login'
-    )
+      'The page title should be "Products" after login'
+    );
 
-    // Verifica se há produtos listados
-    cy.get('.inventory_item').should(
+    // Verify that there are products listed
+    InventoryPage.getInventoryList().should(
       'have.length.greaterThan',
       0,
-      'Deve haver pelo menos um produto listado'
-    )
+      'There should be at least one product listed'
+    );
 
-    // Verifica se o botão de logout está visível
-    cy.get('#react-burger-menu-btn').click()
-    cy.get('#logout_sidebar_link').should(
+    // Verify that the logout button is visible
+    InventoryPage.openMenu();
+    InventoryPage.getLogoutLink().should(
       'be.visible',
-      'O botão de logout deve estar visível'
-    )
+      'The logout button should be visible'
+    );
 
-    // Verifica se um produto específico está listado
-    cy.contains('.inventory_item_name', 'Sauce Labs Backpack').should(
+    // Verify that a specific product is listed
+    InventoryPage.getProductByName('Sauce Labs Backpack').should(
       'be.visible',
-      'O produto "Sauce Labs Backpack" deve estar visível na lista'
-    )
-  })
+      'The "Sauce Labs Backpack" product should be visible in the list'
+    );
+  });
 
   it('should not log in with invalid credentials', () => {
-    cy.get('#user-name').type('usuario_incorreto')
-    cy.get('#password').type('senha_errada')
-    cy.get('[data-test="login-button"]').click()
+    LoginPage.fillUsername('incorrect_user');
+    LoginPage.fillPassword('wrong_password');
+    LoginPage.submit();
 
-    // Valida mensagem de erro de login
-    cy.get('[data-test="error"]').should(
-      'be.visible',
-      'A mensagem de erro deve ser exibida para login inválido'
-    ).and(
-      'contain',
-      'Username and password do not match any user in this service'
-    )
-  })
-})
+    // Validate login error message
+    LoginPage.getErrorMessage()
+      .should(
+        'be.visible',
+        'The error message should be displayed for invalid login'
+      )
+      .and(
+        'contain',
+        'Username and password do not match any user in this service'
+      );
+  });
+});
