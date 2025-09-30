@@ -288,3 +288,8 @@ O arquivo `cypress.config.js` é o ponto central de configuração do Cypress. N
 - `viewportWidth` e `viewportHeight`: Para definir a resolução da tela durante os testes.
 
 Consulte a [documentação oficial do Cypress](https://docs.cypress.io/guides/references/configuration) para ver todas as opções disponíveis.
+
+📝 License
+This project is licensed under the MIT License. See the LICENSE file for more details in each repository.
+
+Developed with ❤️ by GAVB
