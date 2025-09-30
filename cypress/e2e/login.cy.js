@@ -1,6 +1,6 @@
 describe('Login Test', () => {
   beforeEach(() => {
-    // Garante que cada teste começa na tela de login
+    // Garante que cada teste começa na tela de loginn
     cy.visit('https://www.saucedemo.com/')
   })
 
